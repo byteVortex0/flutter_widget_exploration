@@ -29,6 +29,9 @@ class _DismissibleListsState extends State<DismissibleLists> {
           if (newIndex > oldIndex) newIndex -= 1;
           final element = items.removeAt(oldIndex);
           items.insert(newIndex, element);
+
+          final checkedValue = checked.removeAt(oldIndex);
+          checked.insert(newIndex, checkedValue);
         });
       },
       children: [
