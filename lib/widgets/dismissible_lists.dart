@@ -9,10 +9,10 @@ class DismissibleLists extends StatefulWidget {
 
 class _DismissibleListsState extends State<DismissibleLists> {
   final List<String> items = ["Task 1", "Task 2", "Task 3", "Task 4"];
-
   late List<bool> checked;
 
   String? _lastDeletedItem;
+  bool? _lastDeletedChecked;
   int? _lastDeletedIndex;
 
   @override
@@ -27,9 +27,12 @@ class _DismissibleListsState extends State<DismissibleLists> {
       onReorder: (oldIndex, newIndex) {
         setState(() {
           if (newIndex > oldIndex) newIndex -= 1;
+
+          // Move item in items
           final element = items.removeAt(oldIndex);
           items.insert(newIndex, element);
 
+          // Move corresponding checked value
           final checkedValue = checked.removeAt(oldIndex);
           checked.insert(newIndex, checkedValue);
         });
@@ -41,31 +44,29 @@ class _DismissibleListsState extends State<DismissibleLists> {
             background: Container(
               color: Colors.red,
               alignment: Alignment.centerLeft,
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Icon(Icons.delete, color: Colors.white),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
             ),
             secondaryBackground: Container(
               color: Colors.red,
               alignment: Alignment.centerRight,
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Icon(Icons.delete, color: Colors.white),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
             ),
             confirmDismiss: (direction) async {
               return await showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: Text("Confirm Delete"),
-                  content: Text(
-                    "Are you sure you want to delete ${items[i]} ?",
-                  ),
+                  title: const Text("Confirm Delete"),
+                  content: Text("Are you sure you want to delete ${items[i]}?"),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: Text("Cancel"),
+                      child: const Text("Cancel"),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      child: Text("Delete"),
+                      child: const Text("Delete"),
                     ),
                   ],
                 ),
@@ -73,21 +74,26 @@ class _DismissibleListsState extends State<DismissibleLists> {
             },
             onDismissed: (direction) {
               setState(() {
-                _lastDeletedItem = items[i];
-                _lastDeletedIndex = items.indexOf(items[i]);
-                items.remove(items[i]);
+                _lastDeletedIndex = i;
+                _lastDeletedItem = items.removeAt(i);
+                _lastDeletedChecked = checked.removeAt(i);
               });
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${items[i]} deleted'),
+                  content: Text('$_lastDeletedItem deleted'),
                   action: SnackBarAction(
                     label: 'Undo',
                     onPressed: () {
                       setState(() {
                         if (_lastDeletedItem != null &&
-                            _lastDeletedIndex != null) {
+                            _lastDeletedIndex != null &&
+                            _lastDeletedChecked != null) {
                           items.insert(_lastDeletedIndex!, _lastDeletedItem!);
+                          checked.insert(
+                            _lastDeletedIndex!,
+                            _lastDeletedChecked!,
+                          );
                         }
                       });
                     },
